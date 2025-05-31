@@ -5,7 +5,7 @@ local M = {
 }
 
 M.config = {
-    severity = vim.diagnostic.severity.WARN,
+    severity = vim.diagnostic.severity.INFO,
     min_length = 5,
     ignore = { "Dechow", "Neovim" },
     enabled = true,

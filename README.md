@@ -46,7 +46,7 @@ return {
     "Owen-Dechow/nvim_wurd_spel",
     config = function()
         require("wurd_spel").setup({
-            -- severity = vim.diagnostic.severity.WARN,
+            -- severity = vim.diagnostic.severity.INFO,
             -- -- Set the severity level of spelling errors
             -- -- INFO, WARN, ERROR
 
