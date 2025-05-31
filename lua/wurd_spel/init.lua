@@ -44,7 +44,7 @@ local function get_word_under_cursor()
     end
 end
 
-function M.check_string_content(bufn, content, offset)
+function M.check_string_content(bufn, content, offset, move)
     local diagnostics = {}
 
     for idx, line in pairs(content) do
@@ -84,6 +84,11 @@ function M.check_string_content(bufn, content, offset)
     local old = vim.diagnostic.get(bufn, { namespace = M.config.ns_id });
     local new_set = {}
     for _, diag in pairs(old) do
+        if diag.lnum >= offset then
+            diag.lnum = diag.lnum - move
+            diag.end_lnum = diag.end_lnum - move
+        end
+
         if diag.lnum < offset or diag.lnum > offset + #content - 1 then
             new_set[#new_set + 1] = diag
         end
@@ -94,12 +99,13 @@ function M.check_string_content(bufn, content, offset)
     end
 
     vim.diagnostic.set(M.config.ns_id, bufn, new_set)
+    vim.defer_fn(vim.diagnostic.show, 0)
 end
 
 function M.spell_check_buffer()
     local bufn = vim.api.nvim_get_current_buf()
     local content = vim.api.nvim_buf_get_lines(bufn, 0, vim.api.nvim_buf_line_count(0), false)
-    M.check_string_content(bufn, content, 0)
+    M.check_string_content(bufn, content, 0, 0)
 end
 
 function M.spellbad()
@@ -193,10 +199,11 @@ function M.setup(user_config)
                     M.attached_bufs[bufn] = true
 
                     vim.api.nvim_buf_attach(0, false, {
-                        on_lines = function(_, buf, _, first, _, new_last, _)
+                        on_lines = function(_, buf, _, first, last, new_last, _)
+                            local move = last - new_last
                             if M.config.enabled then
                                 local lines = vim.api.nvim_buf_get_lines(buf, first, new_last, false)
-                                M.check_string_content(bufn, lines, first)
+                                M.check_string_content(bufn, lines, first, move)
                             end
                         end
                     })
@@ -215,5 +222,9 @@ function M.setup(user_config)
         end
     })
 end
+
+--this is right
+--spelllling error
+--this is right
 
 return M
