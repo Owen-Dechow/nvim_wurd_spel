@@ -8,7 +8,11 @@ and spelling issues show up as a little line instead of a real warning or info b
 WurdSpel works to fix this by running spell check on everything, not just comments. This
 means that for the few of us that can even spell our variable names right. We are saved!
 WurdSpel also makes spelling errors warnings (this can be changed if you aren't as bad as
-spelling as me). To the spelling failures amongst us, I present `nvim_wurd_spel`
+spelling as me). To the spelling failures amongst us, I present `nvim_wurd_spel`.
+
+
+https://github.com/user-attachments/assets/f1d1930d-0fd4-49ee-9b48-6177d29c7382
+
 
 ## User Commands
 
