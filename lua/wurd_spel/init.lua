@@ -84,13 +84,15 @@ function M.check_string_content(bufn, content, offset, move)
     local old = vim.diagnostic.get(bufn, { namespace = M.config.ns_id });
     local new_set = {}
     for _, diag in pairs(old) do
-        if diag.lnum >= offset then
-            diag.lnum = diag.lnum - move
-            diag.end_lnum = diag.end_lnum - move
-        end
+        if diag.lnum < offset or diag.lnum > offset + move then
+            if diag.lnum >= offset then
+                diag.lnum = diag.lnum - move
+                diag.end_lnum = diag.end_lnum - move
+            end
 
-        if diag.lnum < offset or diag.lnum > offset + #content - 1 then
-            new_set[#new_set + 1] = diag
+            if diag.lnum < offset or diag.lnum > offset + #content - 1 then
+                new_set[#new_set + 1] = diag
+            end
         end
     end
 
@@ -161,11 +163,37 @@ function M.toggle()
 end
 
 function def_commands()
-    vim.api.nvim_create_user_command("WurdSpelBuf", M.spell_check_buffer, {})
-    vim.api.nvim_create_user_command("WurdSpelToggle", M.toggle, {})
-    vim.api.nvim_create_user_command("WurdSpelGood", M.spellgood, {})
-    vim.api.nvim_create_user_command("WurdSpelBad", M.spellbad, {})
-    vim.api.nvim_create_user_command("WurdSpelSuggest", M.spellsuggest, {})
+    local cmds = {
+        buf = M.spell_check_buffer,
+        toggle = M.toggle,
+        good = M.spellgood,
+        bad = M.spellbad,
+        suggest = M.spellsuggest
+    }
+
+    local completions = {}
+    for key, _ in pairs(cmds) do
+        completions[#completions + 1] = key
+    end
+
+    vim.api.nvim_create_user_command(
+        "WurdSpel",
+        function(opts)
+            local cmd = opts.args
+
+            if cmds[cmd] == nil then
+                vim.notify(cmd .. " is not a valid WurdSpel command", vim.log.levels.ERROR)
+            else
+                cmds[cmd]()
+            end
+        end,
+        {
+            nargs = 1,
+            complete = function(_, _, _)
+                return completions
+            end
+        }
+    )
 
     if M.config.remap then
         vim.keymap.set("n", "z=", M.spellsuggest)
@@ -222,9 +250,5 @@ function M.setup(user_config)
         end
     })
 end
-
---this is right
---spelllling error
---this is right
 
 return M

@@ -16,25 +16,26 @@ https://github.com/user-attachments/assets/f1d1930d-0fd4-49ee-9b48-6177d29c7382
 
 ## User Commands
 
-WurdSpel Adds the following user commands
+WurdSpel Adds the `WurdSpel [subcommand]` user command. The possible subcommands are
+defined as follows:
 
-`WurdSpelSuggest`
+`suggest`
 
     Gives spelling suggestions and the option to add the misspelled word to user settings.
 
-`WurdSpelGood`
+`good`
 
     Adds the misspelled word to user settings.
 
-`WurdSpelBad`
+`bad`
 
     Marks the word under the cursor as misspelled.
 
-`WurdSpelBuf`
+`buf`
 
     Runs a spell check over entire buffer.
 
-`WurdSpelToggle`
+`toggle`
 
     Enables or disables WurdSpel.
 
