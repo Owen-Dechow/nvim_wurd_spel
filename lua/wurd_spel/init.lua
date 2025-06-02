@@ -1,4 +1,4 @@
----@diagnostic disable: undefined-global, unnecessary-if
+---@diagnostic disable: undefined-global
 
 local M = {
     attached_bufs = {},
@@ -11,6 +11,11 @@ M.config = {
     enabled = true,
     remap = true,
     remap_special = false,
+    allow_one_letter_prefix = true,
+    buf_option_guards = {
+        modifiable = true,
+        buftype = "",
+    }
 }
 
 local function get_diagnostic_for_namespace(namespace_id)
@@ -61,6 +66,19 @@ function M.check_string_content(bufn, content, offset, move)
             local errors = vim.spell.check(w)
             for _, e in pairs(errors) do
                 if e[2] == "bad" then
+                    if M.config.allow_one_letter_prefix then
+                        local bad = false
+                        for _, e2 in pairs(vim.spell.check(string.sub(w, 2))) do
+                            if e2[2] == "bad" then
+                                bad = true
+                            end
+                        end
+
+                        if not bad then
+                            goto continue
+                        end
+                    end
+
                     local i = word_map[w] or 0
                     word_map[w] = string.find(line, w, i)
 
@@ -122,12 +140,30 @@ end
 
 function M.spellgood()
     local diag = get_diagnostic_for_namespace(M.ns_id)
-    if diag then
+    if diag and diag.word then
         vim.cmd("spellgood " .. diag.word)
-        M.spell_check_buffer()
     else
-        vim.notify("No WurdSpel diagnostic under cursor.")
+        local w = get_word_under_cursor()
+        if w == nil then
+            vim.notify("No WurdSpel diagnostic or word under cursor.")
+            return
+        end
+
+        local answer = vim.fn.confirm(
+            "No diagnostic existed under cursor. Do you want to add \""
+            .. w
+            .. "\" instead?",
+            "&Yes\n&No",
+            2
+        )
+
+        if answer ~= 1 then
+            return
+        end
+        vim.cmd("spellgood " .. w)
     end
+
+    M.spell_check_buffer()
 end
 
 function M.spellsuggest()
@@ -162,13 +198,18 @@ function M.toggle()
     end
 end
 
-function def_commands()
+function M.openspellfile()
+    vim.cmd("edit " .. vim.fn.stdpath("config") .. "/spell/en.utf-8.add")
+end
+
+local function def_commands()
     local cmds = {
         buf = M.spell_check_buffer,
         toggle = M.toggle,
         good = M.spellgood,
         bad = M.spellbad,
-        suggest = M.spellsuggest
+        suggest = M.spellsuggest,
+        openspellfile = M.openspellfile
     }
 
     local completions = {}
@@ -210,6 +251,7 @@ end
 
 function M.setup(user_config)
     def_commands()
+
     local ns_id = vim.api.nvim_create_namespace("wurd_spel")
     M.config = vim.tbl_extend("force", M.config, user_config or {})
     M.config.ns_id = ns_id
@@ -222,24 +264,30 @@ function M.setup(user_config)
         pattern = { "*" },
         callback = function()
             local bufn = vim.api.nvim_get_current_buf()
-            if vim.api.nvim_buf_get_option(0, "modifiable") and vim.api.nvim_buf_get_name(0) ~= "" then
-                if M.attached_bufs[bufn] == nil then
-                    M.attached_bufs[bufn] = true
 
-                    vim.api.nvim_buf_attach(0, false, {
-                        on_lines = function(_, buf, _, first, last, new_last, _)
-                            local move = last - new_last
-                            if M.config.enabled then
-                                local lines = vim.api.nvim_buf_get_lines(buf, first, new_last, false)
-                                M.check_string_content(bufn, lines, first, move)
-                            end
-                        end
-                    })
+            for key, val in pairs(M.config.buf_option_guards) do
+                if not (vim.api.nvim_buf_get_option(0, key) == val) then
+                    return
                 end
+            end
 
-                if M.config.enabled then
-                    M.spell_check_buffer()
+            if M.attached_bufs[bufn] ~= nil then
+                return
+            end
+
+            M.attached_bufs[bufn] = true
+            vim.api.nvim_buf_attach(bufn, false, {
+                on_lines = function(_, buf, _, first, last, new_last, _)
+                    local move = last - new_last
+                    if M.config.enabled then
+                        local lines = vim.api.nvim_buf_get_lines(buf, first, new_last, false)
+                        M.check_string_content(bufn, lines, first, move)
+                    end
                 end
+            })
+
+            if M.config.enabled then
+                M.spell_check_buffer()
             end
         end
     })

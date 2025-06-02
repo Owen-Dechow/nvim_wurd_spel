@@ -8,7 +8,7 @@ and spelling issues show up as a little line instead of a real warning or info b
 WurdSpel works to fix this by running spell check on everything, not just comments. This
 means that for the few of us that can even spell our variable names right, we are saved!
 WurdSpel also makes spelling errors warnings (this can be changed if you aren't as bad as
-spelling as me). To the spelling failures amongst us, I present `nvim_wurd_spel`.
+spelling as me). To the spelling failures amongst us, I present `WurdSpel`.
 
 
 https://github.com/user-attachments/assets/f1d1930d-0fd4-49ee-9b48-6177d29c7382
@@ -39,14 +39,17 @@ defined as follows:
 
     Enables or disables WurdSpel.
 
+`openspellfile`
+
+    Opens the spell add file.
+
 ## Installation
 
 [lazy.nvim](https://github.com/folke/lazy.nvim) - Default config is commented out.
 ```lua
 return {
     "Owen-Dechow/nvim_wurd_spel",
-    config = function()
-        require("wurd_spel").setup({
+        opts = {
             -- severity = vim.diagnostic.severity.INFO,
             -- -- Set the severity level of spelling errors
             -- -- INFO, WARN, ERROR
@@ -57,27 +60,53 @@ return {
             -- ignore = { "Dechow", "Neovim" }
             -- -- Add words to be ignored
             -- -- IMPORTENT: words added to Neovim's built in
-            --    spelling ignore dictionary are still ignored.`
-            --    It is suggested to add words to that dictionary
-            --    using `zg`, `:spellgood`, or from the WurdSpelSuggest
-            --    options instead of adding words here.
+            --     spelling ignore dictionary are still ignored.`
+            --     It is suggested to add words to that dictionary
+            --     using `zg`, `:spellgood`, or from the
+            --     `:WurdSpel suggest` options instead of adding
+            --     words here.
 
             -- enabled = true
             -- -- Enable WurdSpel on start
 
             -- remap = true
             -- -- Remap the builtin z=, zg, & zw commands to the
-            -- -- WurdSpel command equivalents.
-            -- -- z= -> WurdSpelSuggest
-            -- -- zg -> WurdSpelGood
-            -- -- zw -> WurdSpelBad
+            --     WurdSpel command equivalents:
+            --     z= -> WurdSpel suggest
+            --     zg -> WurdSpel good
+            --     zw -> WurdSpel bad
 
             -- remap_special = false
             -- -- Add special remaps
-            -- -- <leader>zz -> WurdSpelSuggest
-            -- -- <leader>zg -> WurdSpelGood
-            -- -- <leader>zw -> WurdSpelBad
-        })
+            --     <leader>zz -> WurdSpel suggest
+            --     <leader>zg -> WurdSpel good
+            --     <leader>zw -> WurdSpel bad
+
+            -- buf_option_guards = {
+            --    modifiable = true,
+            --    buftype = "",
+            -- }
+            -- -- These checks determine if the spellchecker will be
+            --     attached to the buffer. The value will be gotten
+            --     using `nvim_buf_get_option(0)`.
+            -- -- If the result of
+            --     `nvim_buf_get_option` is not equal to the specified
+            --     value in the table then the spellchecker will not
+            --     attach.
+
+            -- allow_one_letter_prefix = true
+            -- -- Allow one letter prefix on words:
+            --     `ilocal` -> correct because local is correct.
+            -- -- If this setting is false:
+            --     `ilocal` -> incorrect because ilocal is not a word.
+        }
     end
 }
 ```
+
+> [!NOTE]
+> This plugin will not set anything up unless you run the `setup` function.
+> In lazy.nvim this is done automatically if you have the opts option. If
+> you are using a different plugin manager you must ensure that `setup` is
+> run.
+
