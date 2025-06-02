@@ -51,14 +51,14 @@ return {
     "Owen-Dechow/nvim_wurd_spel",
         opts = {
             -- severity = vim.diagnostic.severity.INFO,
-            -- -- Set the severity level of spelling errors
-            -- -- INFO, WARN, ERROR
+            -- -- Set the severity level of spelling errors:
+            --     INFO, WARN, or ERROR.
 
             -- min_length = 5,
-            -- -- Set the minimum length of word to be checked
+            -- -- Set the minimum length of word to be checked.
 
             -- ignore = { "Dechow", "Neovim" }
-            -- -- Add words to be ignored
+            -- -- Add words to be ignored.
             -- -- IMPORTENT: words added to Neovim's built in
             --     spelling ignore dictionary are still ignored.`
             --     It is suggested to add words to that dictionary
@@ -67,7 +67,7 @@ return {
             --     words here.
 
             -- enabled = true
-            -- -- Enable WurdSpel on start
+            -- -- Enable WurdSpel on start.
 
             -- remap = true
             -- -- Remap the builtin z=, zg, & zw commands to the
@@ -77,7 +77,7 @@ return {
             --     zw -> WurdSpel bad
 
             -- remap_special = false
-            -- -- Add special remaps
+            -- -- Add special remaps:
             --     <leader>zz -> WurdSpel suggest
             --     <leader>zg -> WurdSpel good
             --     <leader>zw -> WurdSpel bad
@@ -93,6 +93,9 @@ return {
             --     `nvim_buf_get_option` is not equal to the specified
             --     value in the table then the spellchecker will not
             --     attach.
+
+            -- pattern = { "*" }
+            -- -- Pattern for auto commands.
 
             -- allow_one_letter_prefix = true
             -- -- Allow one letter prefix on words:
