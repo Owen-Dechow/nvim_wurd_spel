@@ -15,7 +15,8 @@ M.config = {
     buf_option_guards = {
         modifiable = true,
         buftype = "",
-    }
+    },
+    pattern = {"*"}
 }
 
 local function get_diagnostic_for_namespace(namespace_id)
@@ -261,7 +262,7 @@ function M.setup(user_config)
     end
 
     vim.api.nvim_create_autocmd("BufEnter", {
-        pattern = { "*" },
+        pattern = M.config.pattern,
         callback = function()
             local bufn = vim.api.nvim_get_current_buf()
 
