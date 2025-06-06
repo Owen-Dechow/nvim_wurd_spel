@@ -28,7 +28,6 @@ local function get_diagnostic_for_namespace(namespace_id)
     local diagnostics = vim.diagnostic.get(0, { namespace = namespace_id, lnum = line })
     for _, diag in ipairs(diagnostics) do
         if col >= diag.col and col <= diag.end_col then
-            print(namespace_id, diag.namespace)
             return diag
         end
     end
@@ -175,7 +174,6 @@ function M.spellsuggest()
         local suggestions = vim.fn.spellsuggest(diag.word);
         local add_to_list = "[Add to user settings]"
         table.insert(suggestions, 1, add_to_list)
-        vim.print(diag)
         vim.ui.select(suggestions, { prompt = "WurdSpelSuggest for " .. diag.word }, function(selected)
             if selected then
                 if selected == add_to_list then
