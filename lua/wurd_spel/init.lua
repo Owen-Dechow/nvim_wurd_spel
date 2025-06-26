@@ -18,6 +18,10 @@ M.config = {
     },
     pattern = { "*" },
     ns_id = nil,
+    num_options = 5,
+    add_to_settings_in_suggest = true,
+    add_to_settings_at_end = true,
+    message_prefix = "(zz) ",
 }
 
 local function get_diagnostic_for_namespace(namespace_id)
@@ -89,7 +93,7 @@ function M.check_string_content(bufn, content, offset, move)
                         col = word_map[w] - 1,
                         end_col = word_map[w] + string.len(w) - 1,
                         severity = M.config.severity,
-                        message = "Possible misspelling: \"" .. w .. "\".",
+                        message = M.config.message_prefix .. "Possible misspelling: \"" .. w .. "\".",
                         word = w
                     }
 
@@ -172,8 +176,22 @@ function M.spellsuggest()
     local diag = get_diagnostic_for_namespace(M.config.ns_id)
     if diag then
         local suggestions = vim.fn.spellsuggest(diag.word);
+
+        if M.config.num_options ~= nil then
+            for i = #suggestions, M.config.num_options + 1, -1 do
+                suggestions[i] = nil
+            end
+        end
+
         local add_to_list = "[Add to user settings]"
-        table.insert(suggestions, 1, add_to_list)
+        if M.config.add_to_settings_in_suggest then
+            if M.config.add_to_settings_at_end then
+                suggestions[#suggestions + 1] = add_to_list
+            else
+                table.insert(suggestions, 1, add_to_list)
+            end
+        end
+
         vim.ui.select(suggestions, { prompt = "WurdSpelSuggest for " .. diag.word }, function(selected)
             if selected then
                 if selected == add_to_list then
