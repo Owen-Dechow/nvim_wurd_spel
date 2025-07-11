@@ -266,7 +266,6 @@ local function def_commands()
         vim.keymap.set("n", "<leader>zz", M.spellsuggest)
         vim.keymap.set("n", "<leader>zw", M.spellbad)
         vim.keymap.set("n", "<leader>zg", M.spellgood)
-        vim.notify("true")
     end
 end
 
