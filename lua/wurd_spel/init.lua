@@ -266,14 +266,16 @@ local function def_commands()
         vim.keymap.set("n", "<leader>zz", M.spellsuggest)
         vim.keymap.set("n", "<leader>zw", M.spellbad)
         vim.keymap.set("n", "<leader>zg", M.spellgood)
+        vim.notify("true")
     end
 end
 
 function M.setup(user_config)
+    M.config = vim.tbl_extend("force", M.config, user_config or {})
+
     def_commands()
 
     local ns_id = vim.api.nvim_create_namespace("wurd_spel")
-    M.config = vim.tbl_extend("force", M.config, user_config or {})
     M.config.ns_id = ns_id
 
     for _, val in pairs(M.config.ignore) do
