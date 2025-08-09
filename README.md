@@ -7,12 +7,12 @@ are using Treesitter. Most of the time only strings and comments get checked for
 and spelling issues show up as a little line instead of a real warning or info bar.
 WurdSpel works to fix this by running spell check on everything, not just comments. This
 means that for the few of us that can even spell our variable names right, we are saved!
-WurdSpel also makes spelling errors warnings (this can be changed if you aren't as bad as
-spelling as me). To the spelling failures amongst us, I present `WurdSpel`.
-
+In addition it adds the ability to easily have workspace settings for specific
+projects. WurdSpel also makes spelling errors warnings (this can be changed if
+you aren't as bad as spelling as me). To the spelling failures amongst us, I
+present `WurdSpel`.
 
 https://github.com/user-attachments/assets/f1d1930d-0fd4-49ee-9b48-6177d29c7382
-
 
 ## User Commands
 
@@ -27,9 +27,18 @@ defined as follows:
 
     Adds the misspelled word to user settings.
 
+`goodlocal`
+
+    Adds the misspelled word to workspace settings.
+
+
 `bad`
 
     Marks the word under the cursor as misspelled.
+
+`badlocal`
+
+    Marks the word under the cursor as misspelled in workspace.
 
 `buf`
 
@@ -62,12 +71,21 @@ return {
         -- -- IMPORTENT: words added to Neovim's built in
         --     spelling ignore dictionary are still ignored.`
         --     It is suggested to add words to that dictionary
-        --     using `zg`, `:spellgood`, or from the
+        --     using `zg` or the
         --     `:WurdSpel suggest` options instead of adding
         --     words here.
 
         -- enabled = true
         -- -- Enable WurdSpel on start.
+
+        -- workspace_spell = ".spell/en.utf8.add",
+        -- -- Set the path of workspace spell file
+
+        -- global_spell = nil,
+        -- -- Set the path of your user spell file
+        -- -- If `nil` it will take on the default
+        --     spellfile of your neovim config.
+        --    It is highly suggested to leave as `nil`.
 
         -- remap = true
         -- -- Remap the builtin z=, zg, & zw commands to the

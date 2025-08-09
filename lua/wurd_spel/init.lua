@@ -22,6 +22,8 @@ M.config = {
     add_to_settings_in_suggest = true,
     add_to_settings_at_end = true,
     message_prefix = "(zz) ",
+    workspace_spell = ".spell/en.utf8.add",
+    global_spell = nil,
 }
 
 local function get_diagnostic_for_namespace(namespace_id)
@@ -134,7 +136,31 @@ function M.spell_check_buffer()
     M.check_string_content(bufn, content, 0, 0)
 end
 
-function M.spellbad()
+local function create_spellfile(path)
+    local dir = vim.fn.fnamemodify(path, ":h")
+    if vim.fn.isdirectory(dir) == 0 then
+        vim.fn.mkdir(dir, "p")
+    end
+
+    vim.fn.writefile({}, path)
+end
+
+
+local function set_spell_file(workspace)
+    local file = workspace
+        and M.config.workspace_spell
+        or M.config.global_spell
+
+    if vim.fn.filereadable(file) == 0 then
+        create_spellfile(file)
+    end
+
+    vim.opt.spellfile = file
+end
+
+function M.spellbad(workspace)
+    set_spell_file(workspace)
+
     local w = get_word_under_cursor()
     if w then
         vim.cmd("spellwrong " .. w)
@@ -144,7 +170,9 @@ function M.spellbad()
     end
 end
 
-function M.spellgood()
+function M.spellgood(workspace)
+    set_spell_file(workspace)
+
     local diag = get_diagnostic_for_namespace(M.config.ns_id)
     if diag and diag.word then
         vim.cmd("spellgood " .. diag.word)
@@ -166,7 +194,8 @@ function M.spellgood()
         if answer ~= 1 then
             return
         end
-        vim.cmd("spellgood " .. w)
+
+        vim.cmd("spellgood " .. word);
     end
 
     M.spell_check_buffer()
@@ -183,18 +212,26 @@ function M.spellsuggest()
             end
         end
 
-        local add_to_list = "[Add to user settings]"
+        local add_to_user = "[Add to user settings]"
+        local add_to_workspace = "[Add to workspace settings]"
         if M.config.add_to_settings_in_suggest then
             if M.config.add_to_settings_at_end then
-                suggestions[#suggestions + 1] = add_to_list
+                suggestions[#suggestions + 1] = add_to_workspace
+                suggestions[#suggestions + 1] = add_to_user
             else
-                table.insert(suggestions, 1, add_to_list)
+                table.insert(suggestions, 1, add_to_user)
+                table.insert(suggestions, 1, add_to_workspace)
             end
         end
 
         vim.ui.select(suggestions, { prompt = "WurdSpelSuggest for " .. diag.word }, function(selected)
             if selected then
-                if selected == add_to_list then
+                if selected == add_to_user then
+                    set_spell_file(false)
+                    vim.cmd("spellgood " .. diag.word)
+                    M.spell_check_buffer()
+                elseif selected == add_to_workspace then
+                    set_spell_file(true)
                     vim.cmd("spellgood " .. diag.word)
                     M.spell_check_buffer()
                 else
@@ -219,17 +256,24 @@ function M.toggle()
 end
 
 function M.openspellfile()
-    vim.cmd("edit " .. vim.fn.stdpath("config") .. "/spell/en.utf-8.add")
+    vim.cmd("edit " .. M.config.global_spell)
+end
+
+function M.openlocalspellfile()
+    vim.cmd("edit " .. M.config.workspace_spell)
 end
 
 local function def_commands()
     local cmds = {
         buf = M.spell_check_buffer,
         toggle = M.toggle,
-        good = M.spellgood,
-        bad = M.spellbad,
+        good = function() M.spellgood(false) end,
+        goodlocal= function() M.spellgood(true) end,
+        bad = function() M.spellbad(false) end,
+        badlocal = function() M.spellbad(true) end,
         suggest = M.spellsuggest,
-        openspellfile = M.openspellfile
+        openspellfile = M.openspellfile,
+        openlocalspellfile = M.openlocalspellfile
     }
 
     local completions = {}
@@ -269,8 +313,28 @@ local function def_commands()
     end
 end
 
+local function load_local_spellfile_if_exists(path)
+    if vim.fn.filereadable(path) == 1 then
+        vim.opt.spellfile = vim.fn.fnamemodify(path, ":p")
+    end
+end
+
 function M.setup(user_config)
     M.config = vim.tbl_extend("force", M.config, user_config or {})
+
+    if M.config.global_spell == nil then
+        if type(vim.opt.spellfile) == "string" then
+            M.config.global_spell = vim.opt.spellfile
+        else
+            M.config.global_spell = vim.fn.stdpath("config") .. "/spell/en.utf-8.add"
+        end
+    end
+
+    M.config.workspace_spell =
+        vim.fn.fnamemodify(M.config.workspace_spell, ":p")
+        :gsub("\\", "/")
+
+    load_local_spellfile_if_exists(M.config.workspace_spell)
 
     def_commands()
 
