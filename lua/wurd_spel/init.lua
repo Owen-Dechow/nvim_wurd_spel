@@ -268,7 +268,7 @@ local function def_commands()
         buf = M.spell_check_buffer,
         toggle = M.toggle,
         good = function() M.spellgood(false) end,
-        goodlocal= function() M.spellgood(true) end,
+        goodlocal = function() M.spellgood(true) end,
         bad = function() M.spellbad(false) end,
         badlocal = function() M.spellbad(true) end,
         suggest = M.spellsuggest,
@@ -301,15 +301,15 @@ local function def_commands()
     )
 
     if M.config.remap then
-        vim.keymap.set("n", "z=", M.spellsuggest)
-        vim.keymap.set("n", "zg", M.spellgood)
-        vim.keymap.set("n", "zw", M.spellbad)
+        vim.keymap.set("n", "z=", M.spellsuggest, { desc = "Spell suggest" })
+        vim.keymap.set("n", "zg", M.spellgood, { desc = "Mark spelling good" })
+        vim.keymap.set("n", "zw", M.spellbad, { desc = "Mark spelling bad" })
     end
 
     if M.config.remap_special then
-        vim.keymap.set("n", "<leader>zz", M.spellsuggest)
-        vim.keymap.set("n", "<leader>zw", M.spellbad)
-        vim.keymap.set("n", "<leader>zg", M.spellgood)
+        vim.keymap.set("n", "<leader>zz", M.spellsuggest, { desc = "Spell suggest" })
+        vim.keymap.set("n", "<leader>zw", M.spellbad, { desc = "Mark spelling good" })
+        vim.keymap.set("n", "<leader>zg", M.spellgood, { desc = "Mark spelling bad" })
     end
 end
 
